@@ -1,11 +1,19 @@
 import sqlite3
 from flask import Flask, render_template, request, redirect, url_for
 
-app = Flask(__name__)
 
 def get_db_connection():
     conn = sqlite3.connect('database.db')
-    conn.row_factory =
+    conn.row_factory = sqlite3.Row  # получает строки из БД
+    return conn
+
+@app.route('/', methods=['GET, POINT'])
+def index():
+    conn = get_db_connection()
+    return  render_template('index.html')
+
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'try-to-guess'
 
 
 if __name__ == '__main__':
