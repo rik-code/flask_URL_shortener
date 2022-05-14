@@ -7,14 +7,14 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row  # получает строки из БД
     return conn
 
-@app.route('/', methods=['GET, POINT'])
-def index():
-    conn = get_db_connection()
-    return  render_template('index.html')
-
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'try-to-guess'
 
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    conn = get_db_connection()  # подключаемся к БД
+    return render_template('index.html')
 
 if __name__ == '__main__':
     app.run()
