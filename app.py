@@ -1,5 +1,5 @@
 import sqlite3
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 
 
 def get_db_connection():
@@ -14,9 +14,12 @@ app.config['SECRET_KEY'] = 'try-to-guess'
 @app.route('/', methods=['GET', 'POST'])
 def index():
     conn = get_db_connection()  # подключаемся к БД
+    if request.method == 'POST':
+        url = request.form['url']
+        if not url:
+            flash('The URL is required!')
+            return redirect(url_for('index'))
     return render_template('index.html')
 
 if __name__ == '__main__':
     app.run()
-
-# TODO: Спросить у Демида про ошибку 405
