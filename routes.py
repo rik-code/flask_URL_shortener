@@ -1,4 +1,5 @@
-from app import app, hashid, login
+import hashlib
+from app import app, hashid, login, db
 from flask import render_template, request, redirect, url_for, flash
 from models import User, Url
 
@@ -10,18 +11,18 @@ def load_user(id):
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    conn = get_db_connection()  # подключаемся к БД
     if request.method == 'POST':
         url = request.form['url']
         if not url:
             flash('The URL is required!')
             return redirect(url_for('index'))
-        url_data = conn.execute(f'INSERT INTO urls (original_url) VALUES (?)', (url,))
-        conn.commit()
-        conn.close()
-
-        url_id = url_data.lastrowid
-        hash_url = hashid.encode(url_id)
-        short_url = request.host_url + hash_url
-        return render_template('index.html', s_url=short_url)
+        hash_link = hashlib.sha256(bytes(url, 'ascii'))
+        new_url = Url(
+            original_url=url,
+            short_url=hash_link.hexdigest(),
+            user_id=1
+        )
+        db.session.add(new_url)
+        db.session.commit()
+        return render_template('index.html')
     return render_template('index.html')
