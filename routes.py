@@ -5,6 +5,7 @@ from models import User, Url
 from flask_login import current_user, login_user, logout_user, login_required
 from forms import LoginForm, RegistrationForm
 
+
 @login.user_loader
 def load_user(id):
     return User.query.get(id)
@@ -12,15 +13,17 @@ def load_user(id):
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    urls = Url.query.all()
     if request.method == 'POST':
         url = request.form['url']
+        url_id = urls[-1].id + 1
         if not url:
             flash('The URL is required!')
             return redirect(url_for('index'))
-        hash_link = hashlib.sha256(bytes(url, 'ascii'))
+        hash_link = hashid.encode(url_id)
         new_url = Url(
             original_url=url,
-            short_url=hash_link.hexdigest()[:5],
+            short_url=hash_link,
             user_id=current_user.id
         )
         db.session.add(new_url)
@@ -73,3 +76,12 @@ def user(username):
     user = User.query.filter_by(username=username).first_or_404()
     urls = Url.query.filter_by(user_id=user.id)
     return render_template('user.html', user=user, urls=urls)
+
+
+@app.route('/<short_url>')
+def redirect_to(short_url):
+    url = Url.query.filter_by(short_url=short_url).first_or_404()
+    url.clicks += 1
+    print(url.clicks)
+    db.session.commit()
+    return redirect(url.original_url)
