@@ -88,12 +88,14 @@ def redirect_to(short_url):
 
 
 @app.route('/update-url/<short_url>', methods=['GET', 'POST'])
-@login_required
 def update_url(short_url):
     url = Url.query.filter_by(short_url=short_url).first_or_404()
     form = UpdateUrlForm()
     if form.validate_on_submit():
-        return None
-    elif request.method == 'GET':  # если на страницу просто зашли
-        form.url.data = url.short_url  # вписываю в поле URL текущее значение сокращенной ссылки
-    return render_template('update_url.html', form=form)
+        url.short_url = form.url.data
+        try:
+            db.session.commit()
+        except:
+            return 'There was a problem updating data'
+        return redirect(url_for('index'))
+    return render_template('update_url.html', form=form, url=url)
